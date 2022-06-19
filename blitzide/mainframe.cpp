@@ -627,17 +627,13 @@ void MainFrame::compile(const std::string& cmd) {
 			int row1 = atoi(line.substr(0, n)); line = line.substr(n + 1);
 			n = line.find(':'); if(!n || n == std::string::npos) break;
 			int col1 = atoi(line.substr(0, n)); line = line.substr(n + 1);
-			n = line.find(':'); if(!n || n == std::string::npos) break;
-			int row2 = atoi(line.substr(0, n)); line = line.substr(n + 1);
-			n = line.find(':'); if(!n || n == std::string::npos) break;
-			int col2 = atoi(line.substr(0, n)); line = line.substr(n + 1);
 
 			int pos = ((row1 - 1) << 16) | (col1 - 1);
 
 			if(!open(file)) return;
 			if(Editor* e = getEditor()) e->setCursor(pos);
 
-			err = line;
+			err = "Error: " + line + "\nAt line " + std::to_string(row1) + ", column " + std::to_string(col1) + ".";
 			break;
 		}
 		else if(line.find("...") != line.size() - 3) {

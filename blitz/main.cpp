@@ -278,7 +278,7 @@ int _cdecl main(int argc, char* argv[]) {
 
 		std::string file = '\"' + x.file + '\"';
 		int row = ((x.pos >> 16) & 65535) + 1, col = (x.pos & 65535) + 1;
-		std::cout << file << ":" << row << ":" << col << ":" << row << ":" << col << ":" << x.ex << std::endl;
+		std::cout << file << ":" << row << ":" << col << ":" << x.ex << std::endl;
 		exit(-1);
 	}
 
