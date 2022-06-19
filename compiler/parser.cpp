@@ -42,17 +42,17 @@ void Parser::ex(const std::string& s) {
 
 void Parser::exp(const std::string& s) {
 	switch(toker->curr()) {
-		case NEXT:ex("'Next' without 'For'");
-		case WEND:ex("'Wend' without 'While'");
-		case ELSE:case ELSEIF:ex("'Else' without 'If'");
-		case ENDIF:ex("'Endif' without 'If'");
-		case ENDFUNCTION:ex("'End Function' without 'Function'");
-		case UNTIL:ex("'Until' without 'Repeat'");
-		case FOREVER:ex("'Forever' without 'Repeat'");
-		case CASE:ex("'Case' without 'Select'");
-		case ENDSELECT:ex("'End Select' without 'Select'");
+		case NEXT:ex("\"Next\" without \"For\".");
+		case WEND:ex("\"Wend\" without \"While\".");
+		case ELSE:case ELSEIF:ex("\"Else\" without \"If\".");
+		case ENDIF:ex("\"EndIf\" without \"If\".");
+		case ENDFUNCTION:ex("\"End Function\" without \"Function\".");
+		case UNTIL:ex("\"Until\" without \"Repeat\".");
+		case FOREVER:ex("\"Forever\" without \"Repeat\".");
+		case CASE:ex("\"Case\" without \"Select\".");
+		case ENDSELECT:ex("\"End Select\" without \"Select\".");
 	}
-	ex("Expecting " + s);
+	ex("Expecting " + s + ".");
 }
 
 std::string Parser::parseIdent() {
@@ -126,7 +126,7 @@ void Parser::parseStmtSeq(StmtSeqNode* stmts, int scope, bool debug) {
 						int nest = 1, k;
 						for(k = 1;; ++k) {
 							int c = toker->lookAhead(k);
-							if(isTerm(c)) ex("Mismatched brackets");
+							if(isTerm(c)) ex("Mismatched brackets.");
 							else if(c == '(') ++nest;
 							else if(c == ')' && !--nest) break;
 						}
@@ -166,7 +166,7 @@ void Parser::parseStmtSeq(StmtSeqNode* stmts, int scope, bool debug) {
 				std::unique_ptr<ExprNode> expr(parseExpr(false));
 				std::unique_ptr<StmtSeqNode> stmts(parseStmtSeq(STMTS_BLOCK, debug));
 				int pos = toker->pos();
-				if(toker->curr() != WEND) exp("'Wend'");
+				if(toker->curr() != WEND) exp("\"Wend\"");
 				toker->next();
 				result = d_new WhileNode(expr.release(), stmts.release(), pos);
 			}
@@ -177,7 +177,7 @@ void Parser::parseStmtSeq(StmtSeqNode* stmts, int scope, bool debug) {
 				std::unique_ptr<StmtSeqNode> stmts(parseStmtSeq(STMTS_BLOCK, debug));
 				int curr = toker->curr();
 				int pos = toker->pos();
-				if(curr != UNTIL && curr != FOREVER) exp("'Until' or 'Forever'");
+				if(curr != UNTIL && curr != FOREVER) exp("\"Until\" or \"Forever\"");
 				toker->next(); if(curr == UNTIL) expr = parseExpr(false);
 				result = d_new RepeatNode(stmts.release(), expr, pos);
 			}
@@ -199,14 +199,14 @@ void Parser::parseStmtSeq(StmtSeqNode* stmts, int scope, bool debug) {
 					else if(toker->curr() == DEFAULT) {
 						toker->next();
 						std::unique_ptr<StmtSeqNode> stmts(parseStmtSeq(STMTS_BLOCK, debug));
-						if(toker->curr() != ENDSELECT) exp("'End Select'");
+						if(toker->curr() != ENDSELECT) exp("\"End Select\"");
 						selNode->defStmts = stmts.release();
 						break;
 					}
 					else if(toker->curr() == ENDSELECT) {
 						break;
 					}
-					exp("'Case', 'Default' or 'End Select'");
+					exp("\"Case\", \"Default\" or \"End Select\"");
 				}
 				toker->next();
 				result = selNode.release();
@@ -224,14 +224,14 @@ void Parser::parseStmtSeq(StmtSeqNode* stmts, int scope, bool debug) {
 					std::string ident = parseIdent();
 					stmts = std::unique_ptr<StmtSeqNode>(parseStmtSeq(STMTS_BLOCK, debug));
 					int pos = toker->pos();
-					if(toker->curr() != NEXT) exp("'Next'");
+					if(toker->curr() != NEXT) exp("\"Next\"");
 					toker->next();
 					result = d_new ForEachNode(var.release(), ident, stmts.release(), pos);
 				}
 				else {
 					std::unique_ptr<ExprNode> from, to, step;
 					from = std::unique_ptr<ExprNode>(parseExpr(false));
-					if(toker->curr() != TO) exp("'TO'");
+					if(toker->curr() != TO) exp("\"To\"");
 					toker->next(); to = std::unique_ptr<ExprNode>(parseExpr(false));
 					//step...
 					if(toker->curr() == STEP) {
@@ -240,7 +240,7 @@ void Parser::parseStmtSeq(StmtSeqNode* stmts, int scope, bool debug) {
 					else step = std::unique_ptr<IntConstNode>(d_new IntConstNode(1));
 					stmts = std::unique_ptr<StmtSeqNode>(parseStmtSeq(STMTS_BLOCK, debug));
 					int pos = toker->pos();
-					if(toker->curr() != NEXT) exp("'Next'");
+					if(toker->curr() != NEXT) exp("\"Next\"");
 					toker->next();
 					result = d_new ForNode(var.release(), from.release(), to.release(), step.release(), stmts.release(), pos);
 				}
@@ -282,7 +282,7 @@ void Parser::parseStmtSeq(StmtSeqNode* stmts, int scope, bool debug) {
 			{
 				toker->next();
 				std::unique_ptr<ExprNode> expr1(parseExpr(false));
-				if(toker->curr() != BEFORE && toker->curr() != AFTER) exp("'Before' or 'After'");
+				if(toker->curr() != BEFORE && toker->curr() != AFTER) exp("\"Before\" or \"After\"");
 				bool before = toker->curr() == BEFORE; toker->next();
 				std::unique_ptr<ExprNode> expr2(parseExpr(false));
 				result = d_new InsertNode(expr1.release(), expr2.release(), before);
@@ -303,7 +303,7 @@ void Parser::parseStmtSeq(StmtSeqNode* stmts, int scope, bool debug) {
 				else result = d_new RestoreNode("");
 				break;
 			case DATA:
-				if(scope != STMTS_PROG) ex("'Data' can only appear in main program");
+				if(scope != STMTS_PROG) ex("\"Data\" can only appear in main program.");
 				do {
 					toker->next();
 					ExprNode* expr = parseExpr(false);
@@ -311,17 +311,17 @@ void Parser::parseStmtSeq(StmtSeqNode* stmts, int scope, bool debug) {
 				} while(toker->curr() == ',');
 				break;
 			case TYPE:
-				if(scope != STMTS_PROG) ex("'Type' can only appear in main program");
+				if(scope != STMTS_PROG) ex("\"Type\" can only appear in main program.");
 				toker->next(); structs->push_back(parseStructDecl());
 				break;
 			case BBCONST:
-				if(scope != STMTS_PROG) ex("'Const' can only appear in main program");
+				if(scope != STMTS_PROG) ex("\"Const\" can only appear in main program.");
 				do {
 					toker->next(); consts->push_back(parseVarDecl(DECL_GLOBAL, true));
 				} while(toker->curr() == ',');
 				break;
 			case FUNCTION:
-				if(scope != STMTS_PROG) ex("'Function' can only appear in main program");
+				if(scope != STMTS_PROG) ex("\"Function\" can only appear in main program.");
 				toker->next(); funcs->push_back(parseFuncDecl(debug));
 				break;
 			case DIM:
@@ -342,7 +342,7 @@ void Parser::parseStmtSeq(StmtSeqNode* stmts, int scope, bool debug) {
 				} while(toker->curr() == ',');
 				break;
 			case GLOBAL:
-				if(scope != STMTS_PROG) ex("'Global' can only appear in main program");
+				if(scope != STMTS_PROG) ex("\"Global\" can only appear in main program.");
 				do {
 					toker->next();
 					DeclNode* d = parseVarDecl(DECL_GLOBAL, false);
@@ -424,7 +424,7 @@ DeclNode* Parser::parseVarDecl(int kind, bool constant) {
 	std::string tag = parseTypeTag();
 	DeclNode* d;
 	if(toker->curr() == '[') {
-		if(constant) ex("Blitz arrays may not be constant");
+		if(constant) ex("Blitz arrays may not be constant.");
 		toker->next();
 		std::unique_ptr<ExprSeqNode> exprs(parseExprSeq());
 		if(exprs->size() != 1 || toker->curr() != ']') exp("']'");
@@ -436,7 +436,7 @@ DeclNode* Parser::parseVarDecl(int kind, bool constant) {
 		if(toker->curr() == '=') {
 			toker->next(); expr = parseExpr(false);
 		}
-		else if(constant) ex("Constants must be initialized");
+		else if(constant) ex("Constants must be initialized.");
 		d = d_new VarDeclNode(ident, tag, kind, constant, expr);
 	}
 	d->pos = pos; d->file = incfile;
@@ -450,7 +450,7 @@ DimNode* Parser::parseArrayDecl() {
 	if(toker->curr() != '(') exp("'('");
 	toker->next(); std::unique_ptr<ExprSeqNode> exprs(parseExprSeq());
 	if(toker->curr() != ')') exp("')'");
-	if(!exprs->size()) ex("can't have a 0 dimensional array");
+	if(!exprs->size()) ex("Can't have a 0 dimensional array.");
 	toker->next();
 	DimNode* d = d_new DimNode(ident, tag, exprs.release());
 	arrayDecls[ident] = d;
@@ -474,7 +474,7 @@ DeclNode* Parser::parseFuncDecl(bool debug) {
 	}
 	toker->next();
 	std::unique_ptr<StmtSeqNode> stmts(parseStmtSeq(STMTS_BLOCK, debug));
-	if(toker->curr() != ENDFUNCTION) exp("'End Function'");
+	if(toker->curr() != ENDFUNCTION) exp("\"End Function\"");
 	StmtNode* ret = d_new ReturnNode(0); ret->pos = toker->pos();
 	stmts->push_back(ret); toker->next();
 	DeclNode* d = d_new FuncDeclNode(ident, tag, params.release(), stmts.release());
@@ -494,7 +494,7 @@ DeclNode* Parser::parseStructDecl() {
 		} while(toker->curr() == ',');
 		while(toker->curr() == '\n') toker->next();
 	}
-	if(toker->curr() != ENDTYPE) exp("'Field' or 'End Type'");
+	if(toker->curr() != ENDTYPE) exp("\"Field\" or \"End Type\"");
 	toker->next();
 	DeclNode* d = d_new StructDeclNode(ident, fields.release());
 	d->pos = pos; d->file = incfile;
@@ -524,7 +524,7 @@ IfNode* Parser::parseIf(bool debug) {
 		elseOpt = std::unique_ptr<StmtSeqNode>(parseStmtSeq(blkif ? STMTS_BLOCK : STMTS_LINE, debug));
 	}
 	if(blkif) {
-		if(toker->curr() != ENDIF) exp("'EndIf'");
+		if(toker->curr() != ENDIF) exp("\"EndIf\"");
 	}
 	else if(toker->curr() != '\n') exp("end-of-line");
 
