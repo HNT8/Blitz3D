@@ -91,12 +91,11 @@ void Parser::parseStmtSeq(StmtSeqNode* stmts, int scope, bool debug) {
 				//WIN32 KLUDGE//
 				char buff[MAX_PATH], * p;
 				if(GetFullPathName(inc.c_str(), MAX_PATH, buff, &p)) inc = buff;
-				inc = tolower(inc);
 
 				if(included.find(inc) != included.end()) break;
 
 				std::ifstream i_stream(inc.c_str());
-				if(!i_stream.good()) ex("Unable to open include file");
+				if(!i_stream.good()) ex("Unable to open include file \"" + inc + "\".");
 
 				Toker i_toker(i_stream);
 
