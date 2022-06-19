@@ -597,7 +597,7 @@ void MainFrame::compile(const std::string& cmd) {
 	if(!rd) {
 		putenv("blitzide");
 		compiling.DestroyWindow();
-		AfxMessageBox("Error launching compiler", MB_ICONWARNING | MB_OK);
+		AfxMessageBox("Error launching compiler.", MB_ICONERROR | MB_OK);
 		return;
 	}
 
@@ -611,7 +611,7 @@ void MainFrame::compile(const std::string& cmd) {
 
 		if(n && !sz) break;	//EOF!
 		if(!n && GetLastError() == ERROR_BROKEN_PIPE) break;	//PROC END!
-		if(!n) { err = "Internal Error"; break; }
+		if(!n) { err = "Internal Error."; break; }
 
 		if(buff == '\r') continue;
 		if(buff != '\n') { line += buff; continue; }
@@ -633,7 +633,7 @@ void MainFrame::compile(const std::string& cmd) {
 			if(!open(file)) return;
 			if(Editor* e = getEditor()) e->setCursor(pos);
 
-			err = "Error: " + line + "\nAt line " + std::to_string(row1) + ", column " + std::to_string(col1) + ".";
+			err = "Error: " + line + "\nAt line " + std::to_string(row1 - 1) + ", column " + std::to_string(col1 - 1) + ".";
 			break;
 		}
 		else if(line.find("...") != line.size() - 3) {
@@ -656,7 +656,7 @@ void MainFrame::compile(const std::string& cmd) {
 
 	if(!err.size()) return;
 
-	AfxMessageBox(err.c_str(), MB_ICONWARNING | MB_OK);
+	AfxMessageBox(err.c_str(), MB_ICONERROR | MB_OK);
 }
 
 void MainFrame::build(bool exec, bool publish) {
